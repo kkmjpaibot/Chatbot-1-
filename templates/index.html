@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KKMJP Super Agent</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style-new.css?v=1.2">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ===== Modern Chat UI ===== */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #container {
+            width: 100%;
+            max-width: 420px;
+            height: 90vh;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        #header {
+            background: linear-gradient(135deg, #800080, #BA55D3);
+            color: white;
+            padding: 16px;
+            font-size: 1.2rem;
+            text-align: center;
+            font-weight: bold;
+            position: relative;
+        }
+
+        #chatbox {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #f9fbfd;
+        }
+
+        #inputArea {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background: #fff;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        #sendBtn {
+            margin-left: 10px;
+            background: #007bff;
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            transition: background 0.2s;
+        }
+
+        #sendBtn:hover {
+            background: #0056b3;
+        }
+
+        /* ===== Chat Bubbles ===== */
+        .botMessage, .userMessage {
+            padding: 10px 14px;
+            border-radius: 16px;
+            max-width: 75%;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+        }
+
+        .botMessage {
+            background: #e6f2ff;
+            align-self: flex-start;
+        }
+
+        .userMessage {
+            background: #a30ed1;
+            color: white;
+            align-self: flex-end;
+        }
+
+        /* ===== Character Selection Styling (Cool Update) ===== */
+        .character-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            padding: 0 10px;
+        }
+
+        .character {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #f0f0f0, #d9e6ff);
+            border-radius: 20px;
+            padding: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+            text-align: center;
+        }
+
+        .character:hover {
+            transform: translateY(-6px) rotate(-2deg) scale(1.08);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+            background: linear-gradient(135deg, #d9e6ff, #f0f0f0);
+        }
+
+        .character img {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px; /* Slightly rounded square */
+            object-fit: cover;
+            border: 4px solid transparent;
+            background: linear-gradient(135deg, #6a0dad, #0af2e3);
+            padding: 2px; /* space between image and gradient border */
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .character:hover img {
+            transform: rotate(-5deg) scale(1.1);
+        }
+
+        .character span {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* ===== Google Translate Widget Styling ===== */
+        #google_translate_wrapper {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+            background: #f4d4f6;
+            padding: 5px 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            font-size: 0.8rem;
+        }
+
+        /* Remove default Google frame */
+        .goog-te-banner-frame.skiptranslate,
+        .goog-te-gadget-simple img {
+            display: none !important;
+        }
+
+        .goog-te-gadget-simple {
+            background: transparent !important;
+            border: none !important;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="header">
+            KKMJP Super Agent
+            <!-- Google Translate dropdown -->
+            <div id="google_translate_wrapper">
+                <div id="google_translate_element"></div>
+            </div>
+        </div>
+        <div id="chatbox"></div>
+        <div id="inputArea">
+            <input id="messageInput" type="text" placeholder="Type a message..." onkeypress="if(event.key === 'Enter') sendMessage()" autocomplete="off" />
+            <button id="sendBtn" title="Send">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Google Translate widget -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement(
+                {
+                    pageLanguage: 'en',
+                    includedLanguages: 'en,ms',
+                    layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+                },
+                'google_translate_element'
+            );
+        }
+    </script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <script src="/static/script.js"></script>
+    <script>
+        // Start chat with character selection
+        window.onload = function() {
+            const chatbox = document.getElementById("chatbox");
+
+            let botMsg = document.createElement("div");
+            botMsg.className = "botMessage";
+            botMsg.innerText = "👋 Welcome! Please choose your agent:";
+            chatbox.appendChild(botMsg);
+
+            let options = document.createElement("div");
+            options.className = "character-options";
+
+            const characters = [
+                { name: "Erica", img: "gambar1.jpg" },
+                { name: "Leo", img: "gambar2.jpg" },
+                { name: "Damia", img: "gambar3.jpg" }
+            ];
+
+            characters.forEach(c => {
+                let div = document.createElement("div");
+                div.className = "character";
+                div.innerHTML = `<img src="${c.img}" alt="${c.name}"><span>${c.name}</span>`;
+                div.onclick = () => selectCharacter(c.name);
+                options.appendChild(div);
+            });
+
+            chatbox.appendChild(options);
+        }
+
+        function selectCharacter(name) {
+            const chatbox = document.getElementById("chatbox");
+
+            // Add user "selection"
+            let userMsg = document.createElement("div");
+            userMsg.className = "userMessage";
+            userMsg.innerText = `I choose ${name}`;
+            chatbox.appendChild(userMsg);
+
+            // Bot welcome response
+            let botMsg = document.createElement("div");
+            botMsg.className = "botMessage";
+            botMsg.innerText = `✨ Hello! I am ${name}, I'm your KKMJP Super Agent here to help you find the best protection plan.\n
+            May I know your full name?`;
+            chatbox.appendChild(botMsg);
+
+            // Remove selection UI
+            document.querySelector(".character-options").remove();
+
+            // Auto-scroll to bottom
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
