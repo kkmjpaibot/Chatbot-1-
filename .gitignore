@@ -33,6 +33,7 @@ ENV/
 
 # Credentials
 *.json
+!railway.json
 *.key
 *.pem
 *.p12
